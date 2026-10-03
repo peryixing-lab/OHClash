@@ -1,0 +1,37 @@
+const fs = require('fs');
+const vm = require('vm');
+const assert = require('assert/strict');
+const ts = require('/Applications/DevEco-Studio.app/Contents/tools/arktsdoc/node_modules/typescript');
+const source = fs.readFileSync('entry/src/main/ets/data/ProfileBackup.ets', 'utf8').replace(/^import .*;\n/gm, '').split('/** The file contains subscription credentials;')[0];
+const context = {exports:{}, util: {TextEncoder: class {encodeInto(value) {return new TextEncoder().encode(value);}}}};
+vm.runInNewContext(ts.transpileModule(source, {compilerOptions: {target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.CommonJS}}).outputText, context);
+const parse = context.exports.parseProfileBackup;
+const baseline = {version:1,profiles:[{id:1,name:'测试配置',source:'',content:'proxies: []',updatedAt:1,subscription:{upload:1,download:2,total:10,expire:0}}], selectedProfile:1,preferredMode:'rule',selections:{'1':{'节点选择':'日本节点'}}};
+let passed = 0;
+function valid(name, value) { assert.doesNotThrow(()=>parse(JSON.stringify(value)),name); passed++; }
+function invalid(name, mutate) { const value=structuredClone(baseline); mutate(value); assert.throws(()=>parse(JSON.stringify(value)),name); passed++; }
+valid('valid nested backup', baseline);
+valid('empty installed app', {version:1,profiles:[],selectedProfile:0,preferredMode:'direct',selections:{}});
+invalid('unsupported version',v=>v.version=2);
+invalid('duplicate IDs',v=>v.profiles.push(structuredClone(v.profiles[0])));
+invalid('zero profile ID',v=>v.profiles[0].id=0);
+invalid('fractional profile ID',v=>v.profiles[0].id=1.3);
+invalid('empty body',v=>v.profiles[0].content='   ');
+invalid('null profile',v=>v.profiles[0]=null);
+invalid('missing source',v=>delete v.profiles[0].source);
+invalid('selected missing',v=>v.selectedProfile=2);
+invalid('selected zero while profiles exist',v=>v.selectedProfile=0);
+invalid('negative traffic',v=>v.profiles[0].subscription.upload=-1);
+invalid('malformed subscription',v=>v.profiles[0].subscription=null);
+invalid('wrong mode',v=>v.preferredMode='broken');
+invalid('dangling selection',v=>v.selections['2']={g:'node'});
+invalid('noncanonical selection ID',v=>v.selections['01']={g:'node'});
+invalid('selection array',v=>v.selections['1']=[]);
+invalid('empty selected node',v=>v.selections['1']['节点选择']=' ');
+invalid('missing selections',v=>delete v.selections);
+invalid('wrong date type',v=>v.profiles[0].updatedAt='today');
+invalid('empty name',v=>v.profiles[0].name='');
+const dirty=structuredClone(baseline);dirty.secret='test-secret';dirty.runtimeStatus='running';dirty.profiles[0].extra='test-extra';const clean=parse(JSON.stringify(dirty));assert.equal(clean.secret,undefined);assert.equal(clean.runtimeStatus,undefined);assert.equal(clean.profiles[0].extra,undefined);passed++;
+assert.throws(()=>parse('{'));passed++;
+assert.throws(()=>parse('null'));passed++;
+console.log(`PASS ${passed} backup validation checks`);

@@ -1,0 +1,64 @@
+# Local signing and SDK configuration (copy the example on a fresh clone)
+/build-profile.json5
+/local.properties
+.env
+.env.*
+!.env.example
+/signing/
+/secrets/
+/private/
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.csr
+*.cer
+*.p7b
+*.key
+*.pem
+
+# Dependencies, toolchains and IDE state
+node_modules/
+oh_modules/
+.local-toolchains/
+.hvigor/
+.idea/
+.vscode/
+.appanalyzer/
+.clangd
+.clang-format
+.clang-tidy
+.DS_Store
+
+# Build / preview / native output
+build/
+.cxx/
+.preview/
+.test/
+/entry/libs/
+/entry/src/main/cpp/prebuilt/
+*.hap
+*.hsp
+*.har
+*.app
+*.so
+*.dylib
+*.o
+*.a
+*.log
+*.tsbuildinfo
+
+# Local runtime configuration, exports and diagnostics
+/profiles/
+/subscriptions/
+/backups/
+/diagnostics/
+/artifacts/
+*.backup
+*.backup.json
+*.hprof
+*.heapsnapshot
+
+# Upstream example includes private-key/authentication values; not needed to build
+/native/core/Clash.Meta/docs/config.yaml
+/native/core/Clash.Meta/test/config/
