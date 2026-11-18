@@ -1,5 +1,5 @@
 # OHClash
-
+# 此项目已过时，欢迎各位前往我的另一个项目 [LexiClash](https://github.com/peryixing-lab/LexiClash)
 面向 **HarmonyOS NEXT** 的原生代理客户端。界面与应用逻辑使用 **ArkTS / ArkUI**，代理数据面使用 **Go / mihomo**，通过 C N-API 对接鸿蒙系统 VPN / TUN。项目基于 FlClash 源码适配，不依赖 Flutter 运行时。
 
 应用包含仪表盘、代理、配置、工具四个页面，支持白色浅色、原有深色和跟随系统外观。
